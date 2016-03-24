@@ -16,7 +16,9 @@ func NewPlayer() *Player {
 	go func(p *Player) {
 		for {
 			msg := <-p.mq
-			fmt.Println()
+			fmt.Println(p.Name, "received message:", msg.Content)
 		}
 	}(player)
+
+	return player
 }

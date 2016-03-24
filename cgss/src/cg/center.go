@@ -16,7 +16,6 @@ type Message struct {
 type CenterServer struct {
 	servers map[string] ipc.Server
 	players []*Player
-	rooms []*Room
 	mutex sync.RWMutex
 }
 
@@ -84,7 +83,7 @@ func (server *CenterServer)broadcast(params string) error {
 
 	if len(server.players) > 0 {
 		for _, player := range server.players {
-			player.mq <- message
+			player.mq <- &message
 		}
 	} else {
 		err = errors.New("No player online")
