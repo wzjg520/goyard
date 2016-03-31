@@ -9,15 +9,9 @@ import (
 )
 
 func main() {
-	//	resp, err := http.Get("http://zixun.jia.com")
-	//	if err != nil {
-	//		return
-	//	}
-	//	defer resp.Body.Close()
-	//	str := resp.Body
-	//	fmt.Print(str)
 
 	http.HandleFunc("/bar", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("content-type", "text/html;charset=utf-8")
 		resp, err := http.Get("http://zixun.jia.com")
 		fmt.Fprintf(w, "hello %q", html.EscapeString(r.URL.Path))
 		result, err := ioutil.ReadAll(resp.Body)
