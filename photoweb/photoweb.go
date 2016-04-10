@@ -7,21 +7,47 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 	"path"
 	"strconv"
+	"time"
 )
 
 const (
 	UPLOAD_DIR = "./uploads"
-	VIEWS_DIR = "./views"
+	VIEWS_DIR  = "./views"
 )
 
+var templates map[string]*template.Template
+
+func init() {
+	fileInfoArr, err := ioutil.ReadDir(VIEWS_DIR)
+	if err != nil {
+		panic(err)
+		return
+	}
+
+	var templateName, templatePath string
+	for _, fileInfo := range fileInfoArr {
+		templateName = fileInfo.Name()
+
+		if ext := path.Ext(templateName); ext != ".html" {
+			continue
+		}
+
+		templatePath = VIEWS_DIR + "/" + templateName
+		log.Println("Loading template:", templatePath)
+		t := template.Must(template.ParseFiles(templatePath))
+		templates[templatePath] = t
+
+	}
+
+}
+
 func uploadHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET"{
+	if r.Method == "GET" {
 
 		w.Header().Set("content-type", "text/html;charset=utf-8")
-		if err := renderHtml(w, VIEWS_DIR + "/upload", nil); err != nil {
+		if err := renderHtml(w, VIEWS_DIR+"/upload", nil); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -62,7 +88,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError+3)
 			return
 		}
-		http.Redirect(w, r, "/view?id=" + saveFile, http.StatusFound)
+		http.Redirect(w, r, "/view?id="+saveFile, http.StatusFound)
 	}
 
 }
@@ -91,16 +117,12 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		images = append(images, fileInfo.Name())
 	}
 
+	w.Header().Set("Content-type", "text/html")
 	locals["images"] = images
-	t, err := template.ParseFiles("./views/list.html")
-
-	if err != nil {
+	if err := renderHtml(w, VIEWS_DIR+"/list", locals); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-type", "text/html")
-	t.Execute(w, locals)
 
 }
 
@@ -113,16 +135,11 @@ func isExists(path string) bool {
 }
 
 func renderHtml(w http.ResponseWriter, viewPath string, locals map[string]interface{}) (err error) {
-	t, err := template.ParseFiles(viewPath + ".html")
-	if err != nil {
-		return
-	}
-	err = t.Execute(w, locals)
-    return
+	err = templates[viewPath+".html"].Execute(w, locals)
+	return
 }
 
 func main() {
-
 	http.HandleFunc("/upload", uploadHandler)
 	http.HandleFunc("/view", viewHandler)
 	http.HandleFunc("/", listHandler)
