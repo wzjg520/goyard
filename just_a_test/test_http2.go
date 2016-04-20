@@ -21,6 +21,5 @@ func main() {
 		}
 		defer resp.Body.Close()
 	})
-
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
