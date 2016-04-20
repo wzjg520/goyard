@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"time"
+	"runtime"
 )
 
 const (
@@ -16,6 +17,8 @@ const (
 	LINUX_HOST   = "/etc/hosts"
 	WINDOWS_HOST = "c:/Windows/System32/drivers/etc/hosts"
 )
+
+var runtimePlatform string;
 
 func getHost() (hostByte []byte, err error) {
 	log.Println("connect to ", HOST_SERVER)
@@ -33,7 +36,7 @@ func getHost() (hostByte []byte, err error) {
 }
 
 func getLocalHosts() (host []byte) {
-	file, err := os.Open(LINUX_HOST)
+	file, err := os.Open(runtimePlatform)
 	defer file.Close()
 	checkError(err)
 	buf := make([]byte, 1)
@@ -55,7 +58,7 @@ func getLocalHosts() (host []byte) {
 
 }
 func replaceOsHosts(host, localHost []byte) {
-	file, err := os.OpenFile(LINUX_HOST, os.O_TRUNC|os.O_RDWR|os.O_CREATE, os.ModePerm)
+	file, err := os.OpenFile(runtimePlatform, os.O_TRUNC|os.O_RDWR|os.O_CREATE, os.ModePerm)
 	defer file.Close()
 	checkError(err)
 	host = append([]byte("\n# go_hosts start\n"), host...)
@@ -73,6 +76,16 @@ func replaceOsHosts(host, localHost []byte) {
 func checkError(err error) {
 	if err != nil {
 		log.Fatalln(err.Error())
+	}
+}
+
+func init() {
+	platFrom := runtime.GOOS
+	log.Println("platform: ",platFrom)
+	if platFrom == "linux" {
+		runtimePlatform = LINUX_HOST
+	} else if platFrom == "windows" {
+		runtimePlatform = WINDOWS_HOST
 	}
 }
 
