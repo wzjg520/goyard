@@ -9,6 +9,7 @@ _test
 .idea
 pkg
 bin
+github.com
 
 # Architecture specific extensions/prefixes
 *.[568vq]
