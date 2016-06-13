@@ -42,7 +42,7 @@ func (s *IntSet) String() string {
 		for j := 0; j < 64; j++ {
 			if word&(1<<uint(j)) != 0 {
 				if buf.Len() > len("{") {
-					buf.WriteByte('}')
+					buf.WriteByte(',')
 				}
 				fmt.Fprintf(&buf, "%d", 64*i+j)
 			}
@@ -55,6 +55,7 @@ func (s *IntSet) String() string {
 func main() {
 	var x IntSet
 	x.Add(1)
+	x.Add(123421341234)
 	x.Add(144)
 	x.Add(9)
 
