@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	HOST_SERVER = "https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
+	HOST_SERVER = "http://www.wzjg520.com/hosts.php"
 	//AUTHOR  = "http://www.wzjg520.com"
 	LINUX_HOST   = "/etc/hosts"
 	WINDOWS_HOST = "c:/Windows/System32/drivers/etc/hosts"

@@ -6,12 +6,13 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"time"
 	"sync"
+	"time"
 )
 
 var verbose = flag.Bool("v", true, "show verbose process messages")
 var sema = make(chan struct{}, 20)
+var done = make(chan struct{})
 
 func main() {
 	flag.Parse()
@@ -21,16 +22,28 @@ func main() {
 		roots = []string{"."}
 	}
 
-	for {
-		du(roots)
-		time.Sleep(10 * time.Second)
+	go func() {
+		//fmt.Println("hello")
+		os.Stdin.Read(make([]byte, 1))
+
+		close(done)
+	}()
+	du(roots)
+
+	//for {
+	//	du(roots)
+	//	time.Sleep(10 * time.Second)
+	//}
+
+}
+
+func isCanceled() bool {
+	select {
+	case <-done:
+		return true
+	default:
+		return false
 	}
-
-
-
-
-
-
 }
 
 func du(roots []string) {
@@ -56,9 +69,13 @@ func du(roots []string) {
 		tick = time.Tick(50000 * time.Millisecond)
 	}
 
-	loop:
+loop:
 	for {
 		select {
+		case <-done:
+			for range filesizes {
+				// do nothing
+			}
 		case size, ok := <-filesizes:
 			if !ok {
 				break loop
@@ -75,6 +92,10 @@ func du(roots []string) {
 }
 
 func walkDir(dir string, n *sync.WaitGroup, filesizes chan<- int64) {
+
+	if isCanceled() {
+		return
+	}
 	list := dirents(dir)
 	defer n.Done()
 
@@ -91,7 +112,12 @@ func walkDir(dir string, n *sync.WaitGroup, filesizes chan<- int64) {
 }
 
 func dirents(dir string) []os.FileInfo {
-	sema <- struct {}{}
+
+	select {
+	case <-done:
+		return nil
+	case sema <- struct{}{}:
+	}
 	defer func() {
 		<-sema
 	}()
@@ -101,8 +127,6 @@ func dirents(dir string) []os.FileInfo {
 		fmt.Fprintf(os.Stderr, "du:%v\n", err)
 		return nil
 	}
-
-
 
 	return entries
 }

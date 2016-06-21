@@ -11,6 +11,7 @@ pkg
 bin
 study_beego
 study_fasthttp
+gethosts
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -27,24 +28,3 @@ _testmain.go
 *.exe
 *.test
 *.prof
-#just_a_test/ch8/a.go
-#just_a_test/ch8/du
-#just_a_test/client.go
-#just_a_test/thumbnail/
-Would skip repository study_beego/src/github.com/beego/bee
-Would skip repository study_beego/src/github.com/lib/pq
-Would skip repository study_beego/src/github.com/jtolds/gls
-Would skip repository study_beego/src/github.com/go-sql-driver/mysql
-Would skip repository study_beego/src/github.com/astaxie/beego
-Would skip repository study_beego/src/github.com/smartystreets/goconvey
-Would skip repository study_beego/src/github.com/smartystreets/assertions
-Would skip repository study_beego/src/github.com/howeyc/fsnotify
-#study_beego/src/apiproject
-#study_beego/src/webproject
-#study_beego/bin
-#study_beego/pkg
-#study_beego/.idea
-Would skip repository study_fasthttp/src/github.com/valyala/fasthttp
-Would skip repository study_fasthttp/src/github.com/klauspost/crc32
-Would skip repository study_fasthttp/src/github.com/klauspost/cpuid
-Would skip repository study_fasthttp/src/github.com/klauspost/compress
