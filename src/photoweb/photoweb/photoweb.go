@@ -8,15 +8,15 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"runtime/debug"
 	"strconv"
 	"time"
-	"runtime/debug"
 )
 
 const (
 	UPLOAD_DIR = "./uploads"
 	VIEWS_DIR  = "./views"
-	checkFlag = 0x0001
+	checkFlag  = 0x0001
 )
 
 var templates = make(map[string]*template.Template)
@@ -147,7 +147,7 @@ func wrapHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func staticDirHandle(mux *http.ServeMux, prefix string, staticDir string, flag int) {
 	mux.HandleFunc(prefix, func(w http.ResponseWriter, r *http.Request) {
-		file := staticDir + r.URL.Path[len(prefix) - 1:]
+		file := staticDir + r.URL.Path[len(prefix)-1:]
 		log.Println(r.Method + " " + r.Proto + " " + r.URL.Scheme + r.Host + file)
 		if (checkFlag & flag) == 0 {
 			if exists := isExists(file); !exists {
@@ -159,7 +159,6 @@ func staticDirHandle(mux *http.ServeMux, prefix string, staticDir string, flag i
 
 	})
 }
-
 
 func main() {
 	mux := http.NewServeMux()
