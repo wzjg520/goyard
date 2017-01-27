@@ -21,7 +21,7 @@ const (
 var (
 	runtimePlatform string
 	linuxNewLine    = []byte("\n")
-	windosNewLine   = []byte("\r\n")
+	windowsNewLine  = []byte("\r\n")
 	currNewLine     []byte
 	startHosts      = "#----------MODIFY HOSTS START----------#"
 	endHosts        = "#----------MODIFY HOSTS END----------#"
@@ -39,7 +39,7 @@ func getHost() (hostByte []byte, err error) {
 	hostByte, err = ioutil.ReadAll(resp.Body)
 	checkError(err)
 
-	re, err := regexp.Compile(`\n$`)
+	re, err := regexp.Compile(`\n`)
 	checkError(err)
 	hostByte = re.ReplaceAll(hostByte, currNewLine)
 
@@ -104,7 +104,7 @@ func init() {
 		currNewLine = linuxNewLine
 	} else if platFrom == "windows" {
 		runtimePlatform = WINDOWS_HOST
-		currNewLine = windosNewLine
+		currNewLine = windowsNewLine
 	}
 }
 
