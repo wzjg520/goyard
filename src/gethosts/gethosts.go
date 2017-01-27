@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"time"
 	"runtime"
+	"time"
 )
 
 const (
@@ -18,14 +18,30 @@ const (
 	WINDOWS_HOST = "c:/Windows/System32/drivers/etc/hosts"
 )
 
-var runtimePlatform string;
+var (
+	runtimePlatform string
+	linuxNewLine    = []byte("\n")
+	windosNewLine   = []byte("\r\n")
+	currNewLine     []byte
+	startHosts      = "#----------MODIFY HOSTS START----------#"
+	endHosts        = "#----------MODIFY HOSTS END----------#"
+)
 
 func getHost() (hostByte []byte, err error) {
 	log.Println("connect to ", HOST_SERVER)
 	resp, err := http.Get(HOST_SERVER)
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatal("cant not download", HOST_SERVER)
+	}
+
 	checkError(err)
 	hostByte, err = ioutil.ReadAll(resp.Body)
 	checkError(err)
+
+	re, err := regexp.Compile(`\n$`)
+	checkError(err)
+	hostByte = re.ReplaceAll(hostByte, currNewLine)
 
 	defer func() {
 		resp.Body.Close()
@@ -49,8 +65,8 @@ func getLocalHosts() (host []byte) {
 		localHost = append(localHost, buf...)
 	}
 
-	if m, _ := regexp.Match(`#\sgo_hosts\sstart[\S\s]+?#\sgo_hosts\send`, localHost); m {
-		re, _ := regexp.Compile(`#\sgo_hosts\sstart[\S\s]+?#\sgo_hosts\send`)
+	if m, _ := regexp.Match(startHosts+`[\S\s]+?`+endHosts, localHost); m {
+		re, _ := regexp.Compile(startHosts + `[\S\s]+?` + endHosts)
 		localHost = re.ReplaceAll(localHost, []byte(""))
 		log.Println("start replace hosts")
 	}
@@ -61,8 +77,9 @@ func replaceOsHosts(host, localHost []byte) {
 	file, err := os.OpenFile(runtimePlatform, os.O_TRUNC|os.O_RDWR|os.O_CREATE, os.ModePerm)
 	defer file.Close()
 	checkError(err)
-	host = append([]byte("\n# go_hosts start\n"), host...)
-	host = append(host, []byte("\n# go_hosts end\n")...)
+	startHosts := append([]byte(startHosts), currNewLine...)
+	host = append(startHosts, host...)
+	host = append(host, []byte([]byte(endHosts))...)
 	localHost = append(localHost, host...)
 	localHost = bytes.Trim(localHost, "\x00")
 	_, err = file.Write(localHost)
@@ -81,21 +98,23 @@ func checkError(err error) {
 
 func init() {
 	platFrom := runtime.GOOS
-	log.Println("platform: ",platFrom)
+	log.Println("platform: ", platFrom)
 	if platFrom == "linux" {
 		runtimePlatform = LINUX_HOST
+		currNewLine = linuxNewLine
 	} else if platFrom == "windows" {
 		runtimePlatform = WINDOWS_HOST
+		currNewLine = windosNewLine
 	}
 }
 
 func main() {
 	start := time.Now().Unix()
+	localHosts := getLocalHosts()
 	host, err := getHost()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	localHosts := getLocalHosts()
 	replaceOsHosts(host, localHosts)
 	end := time.Now().Unix()
 	time.Sleep(time.Second * 3)
